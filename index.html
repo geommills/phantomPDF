@@ -2,39 +2,116 @@
 <html>
   <head>
      <!-- Load Leaflet from CDN-->
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src='./bower_components/jquery/dist/jquery.js'></script>
-    <script src='./scripts/client/src/pageloader.js'></script>
-    <script src='./scripts/client/src/map.js'></script>
-    <script src='./scripts/client/src/terrain.js'></script>
-    <!-- Load Esri Leaflet from CDN -->
-    <script src="http://cdn-geoweb.s3.amazonaws.com/esri-leaflet/1.0.0-rc.6/esri-leaflet.js"></script>
-        <script src='./scripts/client/lib/three.js/three.min.js'></script>
-        <script src='./scripts/client/lib/three/OrbitControls.js'></script>
-        <script src='./scripts/client/lib/three/stats.min.js'></script>
-        <script src='./scripts/client/lib/three/Detector.js'></script>
-        <script src='./scripts/client/lib/three/Projector.js'></script>
-    <link rel="stylesheet" type='text/css' href="./content/main.css">
+    <style>
+
+.chart {
+  display: inline-block;
+  margin-right: 0;
+  -webkit-transition: all .3s ease;
+  transition: all .3s ease;
+}
+
+.box {
+  background-color: #eee;
+  padding: 20px;
+  cursor: pointer;
+}
+.box:hover .chart, .box:focus .chart {
+  -webkit-transform: scale(6) translate(7px, -20px);
+          transform: scale(6) translate(7px, -20px);
+}
+
+.bar {
+  position: relative;
+  fill: #aaa;
+  /* height: 21px; */
+  -webkit-transition: fill .3s ease;
+  transition: fill .3s ease;
+  cursor: pointer;
+  font-family: Helvetica, sans-serif;
+  display: inline-block;
+}
+
+.chart:hover .bar,
+.chart:focus .bar {
+  fill: #aaa;
+}
+
+.bar:hover,
+.bar:focus {
+  fill: #ff4136 !important;
+}
+.bar:hover text,
+.bar:focus text {
+  fill: #ff4136;
+}
+
+figcaption {
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+span {
+  color: #ff4136;
+}
+
+body {
+  font-family: Helvetica, sans-serif;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+body, html {
+  height: 100%;
+}
+
+    
+    </style>
   </head>
   <body>
-    <div id="basemaps-wrapper" class="leaflet-bar">
-      <select id="basemapsDDL">
-        <option value="Topographic">Topographic<options>
-        <option value="Streets">Streets</option>
-        <option value="NationalGeographic">National Geographic<options>
-        <option value="Oceans">Oceans<options>
-        <option value="Gray">Gray<options>
-        <option value="DarkGray">Dark Gray<options>
-        <option value="Imagery">Imagery<options>
-        <option value="ShadedRelief">Shaded Relief<options>
-      </select>
-    </div>
-    <div id="map2D"></div>
-    <div id="map3D"></div>
-    <div id="visButtons"><button class='mapControl active' id='twoControl' type='button' onclick='changeView("twoControl")'>2D</button><button class='mapControl'  id='threeControl' type='button' onclick='changeView("threeControl")'>3D</button></div>
-    <script>
-        loadPage();
-    </script>
+
+<div class="box">
+  <p><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="chart" height="20" width="25" aria-labelledby="title" role="img">
+  <title id="title">A bart chart showing information</title>
+  <g class="bar" transform="translate(0,0)">
+    <rect height="10" y="10" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(3,0)">
+    <rect height="6" y="14" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(6,0)">
+    <rect height="20" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(9,0)">
+    <rect height="10" y="10" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(12,0)">
+    <rect height="9" y="11" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(15,0)">
+    <rect height="10" y="10" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(18,0)">
+    <rect height="17" y="3" width="3"></rect>
+  </g>
+  <g class="bar" transform="translate(21,0)">
+    <rect height="18" y="2" width="3"></rect>
+  </g>
+</svg>
+ <span>Apples</span> have been doing particularly well this season.</p>
+  
+</div>
+
   </body>
 </html>
