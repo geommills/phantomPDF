@@ -41,6 +41,12 @@ exports.sendEmail = function (request, response, next)
 exports.printPage = function (request, response, next)
 {
 	fs.readFile("./index.html", "utf-8", function(err, text) {
+
+		/*text = "<h1>Hello from Page 1</h1>"
+					  + "<div style='page-break-before: always;'></div>"
+					  + "<h1>Hello from Page 2</h1>"
+					  + "<div style='page-break-before: always;'></div>"
+					  + "<h1>Hello from Page 3</h1>";*/
 		runPrint(response, text)
 		.then(function(result) {	
 	    	 response.end();	
@@ -56,7 +62,7 @@ function runPrint(response, text)
 			engine: 'jsrender', 
 			recipe: 'phantom-pdf',
 	        phantom: {
-	            header: "<p>Mikes Report</p>",
+	            header: "<div style='width: 100%; border-bottom: solid 1px black'>Report of Charts!</div>",
 	            orientation: "landscape",
 	            format: "A5",
 	            margin: "40px"
