@@ -2,6 +2,8 @@ var url = require('url');
 var path = require('path');
 var fs = require('fs');
 var nodemailer = require('nodemailer');
+var jsreport = require('jsreport')
+var when = require('when');
 
 
 var transporter = nodemailer.createTransport({
@@ -33,6 +35,44 @@ exports.sendEmail = function (request, response, next)
 	      response.write("" );
 	      response.end();
 	    }
+	});
+}
+
+exports.printPage = function (request, response, next)
+{
+	console.log("Print Page Called!");
+
+
+
+	fs.readFile("./index.html", "utf-8", function(err, text) {
+		console.log(text)
+		runPrint(response, text)
+		.then(function(result) {	
+			console.log(result);
+	    	 response.end();	
+		});
+	});
+
+
+
+      	  //response.writeHead(200, {"Content-Type": "text/plain"});
+	      //response.write("Print this" );
+	      //response.end();	
+}
+
+function runPrint(response, text)
+{
+	return jsreport.render(text)
+	.then(function(out) {
+		console.log('Its all good yo');
+    	//pipe pdf with "Hi there!"
+    	console.log(out.result._object);
+		//out.result.pipe(response);
+		response.write(out.result._object, "binary");
+		response.end();
+        response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
+      	 response.writeHead(200, {"Content-Type": "application/pdf"});
+    	return "success";
 	});
 }
 
