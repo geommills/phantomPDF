@@ -41,11 +41,11 @@ exports.sendEmail = function (request, response, next)
 exports.printPage = function (request, response, next)
 {
 	fs.readFile("./index.html", "utf-8", function(err, text) {
-		//text = "<h1>Hello from Page 1</h1>"
-		//			  + "<div style='page-break-before: always;'></div>"
-		//			  + "<h1>Hello from Page 2</h1>"
-		//			  + "<div style='page-break-before: always;'></div>"
-		//			  + "<h1>Hello from Page 3</h1>";
+		/*text = "<h1>Hello from Page 1</h1>"
+					  + "<div style='page-break-before: always;'></div>"
+					  + "<h1 style='color: blue'>Hello from Page 2</h1>"
+					  + "<div style='page-break-before: always;'></div>"
+					  + "<h1>Hello from Page 3</h1>";*/
 		runPrint(response, text)
 		.then(function(result) {
 			response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
@@ -64,7 +64,7 @@ function runPrint(response, text)
 			engine: 'jsrender', 
 			recipe: 'phantom-pdf',
 	        phantom: {
-	            header: "<div style='width: 100%; border-bottom: solid 1px black'>Report of Charts!</div>",
+	            header: "<div style='width: 100%; border-bottom: solid 1px black; font-size: 14pt'>Report of Charts!</div>",
 	            footer: "<div style='text-align:right'>page {#pageNum} of {#numPages}</div>",
 	            orientation: "landscape",
 	            format: "A5",
