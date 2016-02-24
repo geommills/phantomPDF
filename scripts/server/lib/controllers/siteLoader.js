@@ -40,39 +40,40 @@ exports.sendEmail = function (request, response, next)
 
 exports.printPage = function (request, response, next)
 {
-	console.log("Print Page Called!");
-
-
-
 	fs.readFile("./index.html", "utf-8", function(err, text) {
-		console.log(text)
 		runPrint(response, text)
 		.then(function(result) {	
-			console.log(result);
 	    	 response.end();	
 		});
 	});
-
-
-
-      	  //response.writeHead(200, {"Content-Type": "text/plain"});
-	      //response.write("Print this" );
-	      //response.end();	
 }
 
 function runPrint(response, text)
 {
-	return jsreport.render(text)
+	return jsreport.render({
+		template: {
+			content: text,			
+			engine: 'jsrender', 
+			recipe: 'phantom-pdf',
+	        phantom: {
+	            header: "<p>Mikes Report</p>",
+	            orientation: "landscape",
+	            format: "A5",
+	            margin: "40px"
+	        }
+		}
+	})
 	.then(function(out) {
-		console.log('Its all good yo');
-    	//pipe pdf with "Hi there!"
-    	console.log(out.result._object);
-		//out.result.pipe(response);
+		console.log("Successful Creation");
+		response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
+		response.writeHead(200, {"Content-Type": "application/pdf"});
 		response.write(out.result._object, "binary");
 		response.end();
-        response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
-      	 response.writeHead(200, {"Content-Type": "application/pdf"});
-    	return "success";
+		return "success";
+	})
+	.catch(function(e) {    
+		response.end(e.message);
+		return "failed";
 	});
 }
 
