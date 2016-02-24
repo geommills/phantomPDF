@@ -41,15 +41,17 @@ exports.sendEmail = function (request, response, next)
 exports.printPage = function (request, response, next)
 {
 	fs.readFile("./index.html", "utf-8", function(err, text) {
-
 		//text = "<h1>Hello from Page 1</h1>"
 		//			  + "<div style='page-break-before: always;'></div>"
 		//			  + "<h1>Hello from Page 2</h1>"
 		//			  + "<div style='page-break-before: always;'></div>"
 		//			  + "<h1>Hello from Page 3</h1>";
 		runPrint(response, text)
-		.then(function(result) {	
-	    	 response.end();	
+		.then(function(result) {
+			response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
+			response.writeHead(200, {"Content-Type": "application/pdf"});
+			response.write(result._object, "binary");
+			response.end();	
 		});
 	});
 }
@@ -71,12 +73,7 @@ function runPrint(response, text)
 		}
 	})
 	.then(function(out) {
-		console.log("Successful Creation");
-		response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
-		response.writeHead(200, {"Content-Type": "application/pdf"});
-		response.write(out.result._object, "binary");
-		response.end();
-		return "success";
+		return out.result;
 	})
 	.catch(function(e) {    
 		response.end(e.message);
