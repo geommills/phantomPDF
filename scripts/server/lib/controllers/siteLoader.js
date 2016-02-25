@@ -6,6 +6,7 @@ var jsreport = require('jsreport');
 var when = require('when');
 var jsdom = require('jsdom');
 var d3 = require('d3');
+var _ = require('lodash');
 
 
 
@@ -44,29 +45,50 @@ exports.sendEmail = function (request, response, next)
 
 exports.printPage = function (request, response, next)
 {
-	createChart(500, 500, function(chart){
-		console.log("Called back!", chart);
-		var text = chart
-					  + "<div style='page-break-before: always;'></div>"
-					  + chart
-					  + "<div style='page-break-before: always;'></div>"
-					  + chart
-		runPrint(response, text)
-		.then(function(result) {
-			response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
-			response.writeHead(200, {"Content-Type": "application/pdf"});
-			response.write(result._object, "binary");
-			response.end();	
+		getCharts(function(ChartObjects){
+			var text = "";
+			for(var j=0; j <ChartObjects.length; j++)
+			{
+				var chartobj2 = ChartObjects[j];	
+					if(text !== "")
+					{
+						text = text + "<div style='page-break-before: always;'></div>";
+					}	
+					text = text + chartobj2;
+			}
+			runPrint(response, text)
+			.then(function(result) {
+				response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
+				response.writeHead(200, {"Content-Type": "application/pdf"});
+				response.write(result._object, "binary");
+				response.end();	
+			});
 		});
-	});
-	/*fs.readFile("./index.html", "utf-8", function(err, text) {
-		
-	});*/
 }
 
-function createChart(width, height, callback){
+function getCharts(callback)
+{
+	var ChartsAreLoaded = [];
+	var charts = [{id: 1, color: "red", width: 500, height: 500}, {id: 2, color: "green", width: 400, height: 400},{id: 3, color: "blue", width: 300, height: 300}];
+
+	for(var i=0; i <charts.length; i++)
+	{
+		chartobj = charts[i];	
+		createChart(chartobj.width, chartobj.height, i, chartobj.color, function(id, chartval){
+			ChartsAreLoaded.push(chartval);		
+			console.log("Got Chart:", id);
+			if(ChartsAreLoaded.length == charts.length)
+			{
+				callback(ChartsAreLoaded);
+			}		
+		});
+	}
+}
+
+function createChart(widthval, heightval, id, color, callback){
+
   jsdom.env({
-    html: "<html><body></svg></body></html>",
+    html: "<html><body></body></html>",
     scripts: [
       'http://d3js.org/d3.v3.min.js'
     ],
@@ -74,8 +96,8 @@ function createChart(width, height, callback){
 
 		  var d3 = window.d3;
 		  var pad     = { t: 10, r: 10, b: 50, l: 40 },
-		      width   = 800 - pad.l - pad.r,
-		      height  = 500 - pad.t - pad.b,
+		      width   = widthval - pad.l - pad.r,
+		      height  = heightval - pad.t - pad.b,
 		      samples = d3.range(10).map(d3.random.normal(10, 5)),
 		      x       = d3.scale.linear().domain([0, samples.length - 1]).range([0, width]),
 		      y       = d3.scale.linear().domain([0, d3.max(samples)]).range([height, 0]),
@@ -121,20 +143,10 @@ function createChart(width, height, callback){
 		    .attr('class', 'samples')
 		    .attr('d', line)
 		    .style('fill', 'none')
-		    .style('stroke', '#c00')
+		    .style('stroke', color)
 		    .style('stroke-width', 2);
 
-		  /*vis.append('svg:g')
-		    .attr('class', 'x axis')
-		    .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
-		    .call(xAxis);
-
-		  vis.append('svg:g')
-		    .attr('class', 'y axis')
-		    .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
-		    .call(yAxis);*/
-
-       callback(window.d3.select("body").html()); // instead of a return, pass the results to the callback
+       callback(id, window.d3.select("body").html()); // instead of a return, pass the results to the callback
     }
   });
 }
