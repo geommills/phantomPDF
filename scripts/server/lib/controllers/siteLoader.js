@@ -4,6 +4,8 @@ var fs = require('fs');
 var nodemailer = require('nodemailer');
 var jsreport = require('jsreport');
 var when = require('when');
+var jsdom = require('jsdom');
+var d3 = require('d3');
 
 
 
@@ -42,15 +44,13 @@ exports.sendEmail = function (request, response, next)
 
 exports.printPage = function (request, response, next)
 {
-	//var chart = chartjs.getChart();
-	//console.log(chart);
-
-	fs.readFile("./index.html", "utf-8", function(err, text) {
-		text = "<h1>Hello from Page 1</h1>"
+	createChart(500, 500, function(chart){
+		console.log("Called back!", chart);
+		var text = chart
 					  + "<div style='page-break-before: always;'></div>"
-					  + "<h1 style='color: blue'>Hello from Page 2</h1>"
+					  + chart
 					  + "<div style='page-break-before: always;'></div>"
-					  + "<h1>Hello from Page 3</h1>";
+					  + chart
 		runPrint(response, text)
 		.then(function(result) {
 			response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
@@ -59,69 +59,88 @@ exports.printPage = function (request, response, next)
 			response.end();	
 		});
 	});
+	/*fs.readFile("./index.html", "utf-8", function(err, text) {
+		
+	});*/
 }
 
-function createChart()
-{
-	 var pad     = { t: 10, r: 10, b: 50, l: 40 },
-      width   = 800 - pad.l - pad.r,
-      height  = 500 - pad.t - pad.b,
-      samples = d3.range(10).map(d3.random.normal(10, 5)),
-      x       = d3.scale.linear().domain([0, samples.length - 1]).range([0, width]),
-      y       = d3.scale.linear().domain([0, d3.max(samples)]).range([height, 0]),
-      xAxis   = d3.svg.axis().scale(x).orient('bottom').tickSize(height),
-      yAxis   = d3.svg.axis().scale(y).orient('left')
+function createChart(width, height, callback){
+  jsdom.env({
+    html: "<html><body></svg></body></html>",
+    scripts: [
+      'http://d3js.org/d3.v3.min.js'
+    ],
+    done: function(errors, window) {
 
-  var line = d3.svg.line()
-    .interpolate('basis')
-    .x(function(d, i) { return x(i) })
-    .y(y)
+		  var d3 = window.d3;
+		  var pad     = { t: 10, r: 10, b: 50, l: 40 },
+		      width   = 800 - pad.l - pad.r,
+		      height  = 500 - pad.t - pad.b,
+		      samples = d3.range(10).map(d3.random.normal(10, 5)),
+		      x       = d3.scale.linear().domain([0, samples.length - 1]).range([0, width]),
+		      y       = d3.scale.linear().domain([0, d3.max(samples)]).range([height, 0]),
+		      xAxis   = d3.svg.axis().scale(x).orient('bottom').tickSize(height),
+		      yAxis   = d3.svg.axis().scale(y).orient('left')
 
-  var vis = d3.select('body').html('').append('svg')
-    .attr('xmlns', 'http://www.w3.org/2000/svg')
-    .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
-    .attr('width', width + pad.l + pad.r)
-    .attr('height', height + pad.t + pad.b)
-  .append('g')
-    .attr('transform', 'translate(' + pad.l + ',' + pad.t + ')')
+		  var line = d3.svg.line()
+		    .interpolate('basis')
+		    .x(function(d, i) { return x(i) })
+		    .y(y)
 
-  vis.append('g')
-    .attr('class', 'x axis')
-    .call(xAxis)
+		  var vis = d3.select('body').html('').append('svg')
+		    .attr('xmlns', 'http://www.w3.org/2000/svg')
+		    .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+		    .attr('width', width + pad.l + pad.r)
+		    .attr('height', height + pad.t + pad.b)
+		  .append('g')
+		    .attr('transform', 'translate(' + pad.l + ',' + pad.t + ')')
 
-  vis.append('g')
-    .attr('class', 'y axis')
-    .call(yAxis)
+		  vis.append('g')
+		    .attr('class', 'x axis')
+		    .call(xAxis)
 
-  vis.selectAll('.axis text')
-    .style('fill', '#888')
-    .style('font-family', 'Helvetica Neue')
-    .style('font-size', 11)
+		  vis.append('g')
+		    .attr('class', 'y axis')
+		    .call(yAxis)
 
-  vis.selectAll('.axis line')
-    .style('stroke', '#eee')
-    .style('stroke-width', 1)
+		  vis.selectAll('.axis text')
+		    .style('fill', '#888')
+		    .style('font-family', 'Helvetica Neue')
+		    .style('font-size', 11)
 
-  vis.selectAll('.domain')
-    .style('display', 'none')
+		  vis.selectAll('.axis line')
+		    .style('stroke', '#eee')
+		    .style('stroke-width', 1)
 
-  vis.selectAll('path.samples')
-    .data([samples])
-  .enter().append('path')
-    .attr('class', 'samples')
-    .attr('d', line)
-    .style('fill', 'none')
-    .style('stroke', '#c00')
-    .style('stroke-width', 2)
+		  vis.selectAll('.domain')
+		    .style('display', 'none')
 
-    return d3.select('body').node().innerHTML;
+		  vis.selectAll('path.samples')
+		    .data([samples])
+		  .enter().append('path')
+		    .attr('class', 'samples')
+		    .attr('d', line)
+		    .style('fill', 'none')
+		    .style('stroke', '#c00')
+		    .style('stroke-width', 2);
+
+		  /*vis.append('svg:g')
+		    .attr('class', 'x axis')
+		    .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
+		    .call(xAxis);
+
+		  vis.append('svg:g')
+		    .attr('class', 'y axis')
+		    .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
+		    .call(yAxis);*/
+
+       callback(window.d3.select("body").html()); // instead of a return, pass the results to the callback
+    }
+  });
 }
 
 function runPrint(response, text)
 {
-
-
-
 	return jsreport.render({
 		template: {
 			content: text,			
@@ -151,9 +170,6 @@ exports.loadsite = function (request, response, next)
 
   	var uri = url.parse(request.url).pathname
     , filename = path.join(process.cwd(), uri);
-
-    console.log(request);
-    console.log(response);
 
   if(request.url.toLowerCase().indexOf("/controllers/") > -1)
 	filename = "";
@@ -197,7 +213,7 @@ exports.loadsite = function (request, response, next)
 			//nada
 			break;
 		}
-		console.log(responseType);
+
 		responseType !== "" ? response.writeHead(200, {"Content-Type": responseType}) : false;
 		response.write(file, "binary");
 		response.end();
