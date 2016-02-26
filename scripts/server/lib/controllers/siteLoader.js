@@ -45,8 +45,10 @@ exports.sendEmail = function (request, response, next)
 
 exports.printPage = function (request, response, next)
 {
+	var text = getCoverPage();
+	getTabularData(response, function(tabularData){
+		text = text + tabularData;
 		getCharts(function(ChartObjects){
-			var text = "";
 			for(var j=0; j <ChartObjects.length; j++)
 			{
 				var chartobj2 = ChartObjects[j];	
@@ -54,7 +56,7 @@ exports.printPage = function (request, response, next)
 					{
 						text = text + "<div style='page-break-before: always;'></div>";
 					}	
-					text = text + chartobj2;
+					text = text + "<table><tr><td>" + chartobj2 + "</td></tr></table>";
 			}
 			runPrint(response, text)
 			.then(function(result) {
@@ -64,6 +66,58 @@ exports.printPage = function (request, response, next)
 				response.end();	
 			});
 		});
+	});
+}
+
+function getTabularData(response, callback)
+{
+	var data = [];
+	fs.readFile("./scripts/server/data/lt01d.csv", 'utf8', function (err,dataset) {
+		if (err) {
+	    	console.log(err);
+	    	response.send(err);
+	  	}
+	  	var remaining = '';
+	  	data = dataset;
+	  	remaining += data;
+		var index = remaining.indexOf('\n');
+		var count = 0;
+		while (index > -1) {
+	      index = remaining.indexOf('\n');
+	      var line = remaining.substring(0, index);
+	      var splitData = line.split(',');
+	      remaining = remaining.substring(index + 1);
+	      var style="style='border-bottom: solid 1px black'";
+	      if(count==0)
+	      {
+	      	  index = remaining.indexOf('\n');
+	      	  var line2 = remaining.substring(0, index);
+	      	  var splitData2 = line2.split(',');	
+	      	  console.log("Values:", splitData2)
+	      	  html = html + "<tr>";
+		      html = html + "<td "+style+">"+splitData2[0]+"</td>";
+	      }
+	      else
+	      {
+	      	  style = "";
+	      	  html = html + "<tr>";
+		      html = html + "<td>&nbsp;</td>";
+	  	  }
+		  for(var i=1; i < splitData.length; i++)
+		  {	      	
+		      html = html + "<td "+style+">"+splitData[i]+"</td>";
+		  }
+	      html = html + "</tr>";
+	      count +=1;
+		}
+		html = html + "<div style='page-break-before: always;'></div>";
+		return callback(html);
+	});
+}
+
+function getCoverPage()
+{
+	return "<table style='width: 100%; height: 500px;' ><tr><td style='text-align: center; vertical-align:middle'><h1>Custom Report</h1></td></tr></table><div style='page-break-before: always;'></div>";
 }
 
 function getCharts(callback)
@@ -76,7 +130,6 @@ function getCharts(callback)
 		chartobj = charts[i];	
 		createChart(chartobj.width, chartobj.height, i, chartobj.color, function(id, chartval){
 			ChartsAreLoaded.push(chartval);		
-			console.log("Got Chart:", id);
 			if(ChartsAreLoaded.length == charts.length)
 			{
 				callback(ChartsAreLoaded);
