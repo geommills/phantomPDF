@@ -72,6 +72,7 @@ exports.printPage = function (request, response, next)
 function getTabularData(response, callback)
 {
 	var data = [];
+	var html = "<table style='width: 100%' cellspacing='0' cellpadding='20'><tr><td><table style='width: 100%' cellspacing='0' cellpadding='5'>";	
 	fs.readFile("./scripts/server/data/lt01d.csv", 'utf8', function (err,dataset) {
 		if (err) {
 	    	console.log(err);
@@ -82,6 +83,8 @@ function getTabularData(response, callback)
 	  	remaining += data;
 		var index = remaining.indexOf('\n');
 		var count = 0;
+		var header = "";
+	      var instrument = "";
 		while (index > -1) {
 	      index = remaining.indexOf('\n');
 	      var line = remaining.substring(0, index);
@@ -96,21 +99,36 @@ function getTabularData(response, callback)
 	      	  console.log("Values:", splitData2)
 	      	  html = html + "<tr>";
 		      html = html + "<td "+style+">"+splitData2[0]+"</td>";
+		      instrument = splitData2[0];
+	      	  header = header + "<tr>";
+		      header = header + "<td "+style+">instrument_name</td>";
+			  for(var i=1; i < splitData.length; i++)
+			  {	      	
+			      html = html + "<td "+style+">"+splitData[i]+"</td>";
+			      header = header + "<td "+style+">"+splitData[i]+"</td>";
+			  }
+
 	      }
 	      else
 	      {
+	      	  console.log(instrument, splitData[0]);
+		  	  if(instrument !== splitData[0] && splitData[0] !== "")
+		  	  {
+		  	  	instrument = splitData[0];
+		  	  	html = html + header.replace("instrument_name", instrument)
+		  	  }
 	      	  style = "";
 	      	  html = html + "<tr>";
 		      html = html + "<td>&nbsp;</td>";
+			  for(var i=1; i < splitData.length; i++)
+			  {	      	
+			      html = html + "<td "+style+">"+splitData[i]+"</td>";
+			  }
 	  	  }
-		  for(var i=1; i < splitData.length; i++)
-		  {	      	
-		      html = html + "<td "+style+">"+splitData[i]+"</td>";
-		  }
 	      html = html + "</tr>";
 	      count +=1;
 		}
-		html = html + "<div style='page-break-before: always;'></div>";
+		html = html + "</table></tr></td></table>";
 		return callback(html);
 	});
 }
