@@ -140,7 +140,7 @@ function getTabularData(response, callback)
 
 function getCoverPage()
 {
-	return "<!DOCTYPE html><html><head><link rel='stylesheet' type='text/css' href='http://localhost:1337/node_modules/c3/c3.css'></head><body><table style='width: 100%; height: 500px;' ><tr><td style='text-align: center; vertical-align:middle'><h1>Custom Report</h1></td></tr></table><div style='page-break-before: always;'></div>";
+	return "<!DOCTYPE html><html><head><script type='text/javascript' href='http://localhost:1337/node_modules/c3/c3.js'></script><link rel='stylesheet' type='text/css' href='http://localhost:1337/node_modules/c3/c3.css'></head><body><table style='width: 100%; height: 500px;' ><tr><td style='text-align: center; vertical-align:middle'><h1>Custom Report</h1></td></tr></table><div style='page-break-before: always;'></div>";
 }
 
 function getCharts(callback)
@@ -165,7 +165,7 @@ function createChart(widthval, heightval, id, color, callback){
 
 
   jsdom.env({
-    html: "<html><body><div id='chart' style='width: 100%; height: 100%' ></div></body></html>",
+    html: "<html><body><div id='fullchart' style='width: 500px; height: 500px' ><div id='chart'></div><div class='legend'></div></body></html>",
     scripts: [
       'http://d3js.org/d3.v3.min.js',
       'http://localhost:1337/node_modules/c3/c3.js',
@@ -173,28 +173,48 @@ function createChart(widthval, heightval, id, color, callback){
     ],
     done: function(errors, window) {
 
-    	  var c3 = window.c3;		  
-    	  var d3 = window.d3;
+    	var c3 = window.c3;		  
+    	var d3 = window.d3;
 
-      var chart = c3.generate({padding: {
-		  left: 40,
-		  bottom: 40
-		},
-        size: {
-        width: widthval,
-        height: heightval
-      },
+    	var periodOne = ['2013-01-01', '2013-01-04', '2013-01-07','2013-01-11','2013-01-15'];
+		var periodTwo = ['2013-01-02', '2013-01-04', '2013-01-06','2013-01-08', '2013-01-10','2013-01-13', '2013-01-15','2013-01-18', '2013-01-22'];
+		var periodThr = ['2013-01-05', '2013-01-10', '2013-01-15','2013-01-20', '2013-01-25'];
+		var xOne = [12,31,14,13,34];
+		var xTwo = [11,13,14,23,63,27,21,19,15];
+		var xThr = [12,32,13,13,23];
+
+	    var chart = c3.generate({padding: {
+			  left: 40,
+			  bottom: 40
+			},
+	        size: {
+	        width: widthval,
+	        height: heightval
+	    },
         data: {
-            x: 'x',
+        	xs:{
+                //Declare the axes
+                'Winter 08,09': 'x1',
+                'Winter 09,10': 'x2',
+                'Winter 10,11': 'x3'
+            },
             columns: [
-                ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06', '2013-01-07', '2013-01-08', '2013-01-09', '2013-01-10', '2013-01-11', '2013-01-12'],
-                ['sample1', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250],
-                ['sample2', 40, 100, 200, 430, 154, 166, 30, 100, 100, 30, 100, 300]
+                ['x1'].concat(periodOne),
+                ['x2'].concat(periodTwo),
+                ['x3'].concat(periodThr),
+                ['Winter 08,09'].concat(xOne),
+                ['Winter 09,10'].concat(xTwo),
+                ['Winter 10,11'].concat(xThr)
             ],
-            type: 'spline'
+            type: 'line',
+	        colors: {
+	            'Winter 08,09': color,
+	            'Winter 09,10': color,
+	            'Winter 10,11': color
+	        },
         },
         legend: {
-  			hide: true
+        	show: false
 		},
         axis: {
             x: {
@@ -210,65 +230,21 @@ function createChart(widthval, heightval, id, color, callback){
       });
 
       var svg = d3.select("svg");
+
+
+	d3.select('.legend').insert('div', '.chart').attr('class', 'legend').selectAll('span')
+    .data(['Winter 08,09', 'Winter 09,10', 'Winter 10,11']).enter().append('span')
+    .attr('data-id', function (id) { return id; })
+    .html(function (id) {  
+    	var html = '<span style="padding-left: 10px; font-size: 8pt"><svg width="10" height="10"><rect width="10" height="10" fill="'+chart.color(id)+'"></rect></svg><span style="padding-left: 5px">' + id + '</span></span>'; 	
+    	return html; 
+    })
+    .each(function (id) {
+    	//d3.select(this).append("svg").attr("width", 20).attr("height", 20).append("rect").attr("width", 20).attr("height", 20).attr("fill", chart.color(id));
+    });
+
       svg.selectAll("defs").remove();
-      setTimeout(function () { callback(id, "<div class='c3' style='width: 100%'>"+ window.document.getElementById("chart").innerHTML + "</div>"); }, 500);
-
-/*
-		  var d3 = window.d3;
-		  var pad     = { t: 10, r: 10, b: 50, l: 40 },
-		      width   = widthval - pad.l - pad.r,
-		      height  = heightval - pad.t - pad.b,
-		      samples = d3.range(10).map(d3.random.normal(10, 5)),
-		      x       = d3.scale.linear().domain([0, samples.length - 1]).range([0, width]),
-		      y       = d3.scale.linear().domain([0, d3.max(samples)]).range([height, 0]),
-		      xAxis   = d3.svg.axis().scale(x).orient('bottom').tickSize(height),
-		      yAxis   = d3.svg.axis().scale(y).orient('left')
-
-		  var line = d3.svg.line()
-		    .interpolate('basis')
-		    .x(function(d, i) { return x(i) })
-		    .y(y)
-
-		  var vis = d3.select('body').html('').append('svg')
-		    .attr('xmlns', 'http://www.w3.org/2000/svg')
-		    .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
-		    .attr('width', width + pad.l + pad.r)
-		    .attr('height', height + pad.t + pad.b)
-		  .append('g')
-		    .attr('transform', 'translate(' + pad.l + ',' + pad.t + ')')
-
-		  vis.append('g')
-		    .attr('class', 'x axis')
-		    .call(xAxis)
-
-		  vis.append('g')
-		    .attr('class', 'y axis')
-		    .call(yAxis)
-
-		  vis.selectAll('.axis text')
-		    .style('fill', '#888')
-		    .style('font-family', 'Helvetica Neue')
-		    .style('font-size', 11)
-
-		  vis.selectAll('.axis line')
-		    .style('stroke', '#eee')
-		    .style('stroke-width', 1)
-
-		  vis.selectAll('.domain')
-		    .style('display', 'none')
-
-		  vis.selectAll('path.samples')
-		    .data([samples])
-		  .enter().append('path')
-		    .attr('class', 'samples')
-		    .attr('d', line)
-		    .style('fill', 'none')
-		    .style('stroke', color)
-		    .style('stroke-width', 2);
-*/
-	    //console.log(window.document.getElementById("chart").innerHTML);
-	    
-       //callback(id, window.d3.select("body").html()); // instead of a return, pass the results to the callback
+      setTimeout(function () { callback(id, "<div class='c3' style='width: 100%; position: relative'>"+ window.document.getElementById("fullchart").innerHTML + "</div>"); }, 500);
     }
   });
 }

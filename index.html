@@ -122,27 +122,48 @@ body, html {
 <div id='chart'></div>
 
 <script type='text/javascript'>
+var color = "red";
+      var periodOne = ['2013-01-01', '2013-01-04', '2013-01-07','2013-01-11','2013-01-15'];
+    var periodTwo = ['2013-01-02', '2013-01-04', '2013-01-06','2013-01-08', '2013-01-10','2013-01-13', '2013-01-15','2013-01-18', '2013-01-22'];
+    var periodThr = ['2013-01-05', '2013-01-10', '2013-01-15','2013-01-20', '2013-01-25'];
+    var xOne = [12,31,14,13,34];
+    var xTwo = [11,13,14,23,63,27,21,19,15];
+    var xThr = [12,32,13,13,23];
 
-  var chart = c3.generate({padding: {
-      left: 40,
-      bottom: 40
-    },
-        size: {
-        width: 500,
-        height: 500
+      var chart = c3.generate({padding: {
+        left: 40,
+        bottom: 40
+      },
+          size: {
+          width: 500,
+          height: 500
       },
         data: {
-            x: 'x',
+          xs:{
+                //Declare the axes
+                'Winter 08,09': 'x1',
+                'Winter 09,10': 'x2',
+                'Winter 10,11': 'x3'
+            },
             columns: [
-                ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06', '2013-01-07', '2013-01-08', '2013-01-09', '2013-01-10', '2013-01-11', '2013-01-12'],
-                ['sample1', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250],
-                ['sample2', 40, 100, 200, 430, 154, 166, 30, 100, 100, 30, 100, 300]
+                ['x1'].concat(periodOne),
+                ['x2'].concat(periodTwo),
+                ['x3'].concat(periodThr),
+                ['Winter 08,09'].concat(xOne),
+                ['Winter 09,10'].concat(xTwo),
+                ['Winter 10,11'].concat(xThr)
             ],
-            type: 'spline'
+            type: 'line',
+            colors: {
+              'Winter 08,09': color,
+              'Winter 09,10': color,
+              'Winter 10,11': color
+            },
         },
         legend: {
-        hide: true
-    },
+          hide: false,
+          position: 'inset'
+        },
         axis: {
             x: {
                 type: 'timeseries',
