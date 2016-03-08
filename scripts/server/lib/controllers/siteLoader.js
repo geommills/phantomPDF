@@ -58,6 +58,11 @@ exports.printPage = function (request, response, next)
 					}	
 					text = text + "<table><tr><td>" + chartobj2 + "</td></tr></table>";
 			}
+
+				response.writeHead(200, {"Content-Type": "text/html"});
+			response.write(text);
+				response.end();	
+
 			runPrint(response, text)
 			.then(function(result) {
 				response.setHeader("Content-disposition", "attachment; filename=newpdf.pdf");
@@ -141,7 +146,7 @@ function getCoverPage()
 function getCharts(callback)
 {
 	var ChartsAreLoaded = [];
-	var charts = [{id: 1, color: "red", width: 500, height: 500}, {id: 2, color: "green", width: 400, height: 400},{id: 3, color: "blue", width: 300, height: 300}];
+	var charts = [{id: 1, color: "red", width: 500, height: 500}];//, {id: 2, color: "green", width: 400, height: 400},{id: 3, color: "blue", width: 300, height: 300}];
 
 	for(var i=0; i <charts.length; i++)
 	{
@@ -159,12 +164,35 @@ function getCharts(callback)
 function createChart(widthval, heightval, id, color, callback){
 
   jsdom.env({
-    html: "<html><body></body></html>",
+    html: "<html><body><div id='chart' style='padding:30px'></div></body></html>",
     scripts: [
+      'http://localhost:1337/node_modules/c3/c3.js',
+      'http://localhost:1337/node_modules/c3/c3.css',
       'http://d3js.org/d3.v3.min.js'
     ],
     done: function(errors, window) {
 
+    	  var c3 = window.c3;
+		  var chart = c3.generate({
+		  	size: {
+			  width: widthval,
+			  height: heightval
+			},
+		    data: {
+		        x: 'x',
+		        columns: [
+		            ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06', '2013-01-07', '2013-01-08', '2013-01-09', '2013-01-10', '2013-01-11', '2013-01-12'],
+		            ['sample', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250]
+		        ]
+		    },
+		    axis: {
+		        x: {
+		            type: 'timeseries',
+		        }
+		    }
+		  });
+
+/*
 		  var d3 = window.d3;
 		  var pad     = { t: 10, r: 10, b: 50, l: 40 },
 		      width   = widthval - pad.l - pad.r,
@@ -216,8 +244,10 @@ function createChart(widthval, heightval, id, color, callback){
 		    .style('fill', 'none')
 		    .style('stroke', color)
 		    .style('stroke-width', 2);
-
-       callback(id, window.d3.select("body").html()); // instead of a return, pass the results to the callback
+*/
+	    //console.log(window.document.getElementById("chart").innerHTML);
+	    callback(id,window.document.getElementById("chart").innerHTML);
+       //callback(id, window.d3.select("body").html()); // instead of a return, pass the results to the callback
     }
   });
 }
@@ -261,7 +291,7 @@ exports.loadsite = function (request, response, next)
   if(request.url.toLowerCase().indexOf("/utilities/") > -1)
 	filename = "";
 
-  path.exists(filename, function(exists) {
+  fs.exists(filename, function(exists) {
     if(!exists) {
       response.writeHead(404, {"Content-Type": "text/plain"});
       response.write("404 Not Found\n" + filename );
