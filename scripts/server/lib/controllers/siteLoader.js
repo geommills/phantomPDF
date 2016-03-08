@@ -58,10 +58,10 @@ exports.printPage = function (request, response, next)
 					}	
 					text = text + "<table><tr><td>" + chartobj2 + "</td></tr></table>";
 			}
-
-				response.writeHead(200, {"Content-Type": "text/html"});
-			response.write(text);
-				response.end();	
+			text = text + "</body></html>";
+			//response.writeHead(200, {"Content-Type": "text/html"});
+			//response.write(text);
+			//response.end();	
 
 			runPrint(response, text)
 			.then(function(result) {
@@ -140,13 +140,13 @@ function getTabularData(response, callback)
 
 function getCoverPage()
 {
-	return "<table style='width: 100%; height: 500px;' ><tr><td style='text-align: center; vertical-align:middle'><h1>Custom Report</h1></td></tr></table><div style='page-break-before: always;'></div>";
+	return "<!DOCTYPE html><html><head><link rel='stylesheet' type='text/css' href='http://localhost:1337/node_modules/c3/c3.css'></head><body><table style='width: 100%; height: 500px;' ><tr><td style='text-align: center; vertical-align:middle'><h1>Custom Report</h1></td></tr></table><div style='page-break-before: always;'></div>";
 }
 
 function getCharts(callback)
 {
 	var ChartsAreLoaded = [];
-	var charts = [{id: 1, color: "red", width: 500, height: 500}];//, {id: 2, color: "green", width: 400, height: 400},{id: 3, color: "blue", width: 300, height: 300}];
+	var charts = [{id: 1, color: "red", width: 500, height: 500}, {id: 2, color: "green", width: 400, height: 400},{id: 3, color: "blue", width: 300, height: 300}];
 
 	for(var i=0; i <charts.length; i++)
 	{
@@ -163,34 +163,55 @@ function getCharts(callback)
 
 function createChart(widthval, heightval, id, color, callback){
 
+
   jsdom.env({
-    html: "<html><body><div id='chart' style='padding:30px'></div></body></html>",
+    html: "<html><body><div id='chart' style='width: 100%; height: 100%' ></div></body></html>",
     scripts: [
+      'http://d3js.org/d3.v3.min.js',
       'http://localhost:1337/node_modules/c3/c3.js',
-      'http://localhost:1337/node_modules/c3/c3.css',
-      'http://d3js.org/d3.v3.min.js'
+      'http://localhost:1337/node_modules/c3/c3.css'
     ],
     done: function(errors, window) {
 
-    	  var c3 = window.c3;
-		  var chart = c3.generate({
-		  	size: {
-			  width: widthval,
-			  height: heightval
-			},
-		    data: {
-		        x: 'x',
-		        columns: [
-		            ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06', '2013-01-07', '2013-01-08', '2013-01-09', '2013-01-10', '2013-01-11', '2013-01-12'],
-		            ['sample', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250]
-		        ]
-		    },
-		    axis: {
-		        x: {
-		            type: 'timeseries',
-		        }
-		    }
-		  });
+    	  var c3 = window.c3;		  
+    	  var d3 = window.d3;
+
+      var chart = c3.generate({padding: {
+		  left: 40,
+		  bottom: 40
+		},
+        size: {
+        width: widthval,
+        height: heightval
+      },
+        data: {
+            x: 'x',
+            columns: [
+                ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06', '2013-01-07', '2013-01-08', '2013-01-09', '2013-01-10', '2013-01-11', '2013-01-12'],
+                ['sample1', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250],
+                ['sample2', 40, 100, 200, 430, 154, 166, 30, 100, 100, 30, 100, 300]
+            ],
+            type: 'spline'
+        },
+        legend: {
+  			hide: true
+		},
+        axis: {
+            x: {
+                type: 'timeseries',
+	            tick: {
+	                format: '%Y-%m-%d',
+      				rotate: 90,
+      				fit: false,
+	            },
+            	show: true
+            },
+        }
+      });
+
+      var svg = d3.select("svg");
+      svg.selectAll("defs").remove();
+      setTimeout(function () { callback(id, "<div class='c3' style='width: 100%'>"+ window.document.getElementById("chart").innerHTML + "</div>"); }, 500);
 
 /*
 		  var d3 = window.d3;
@@ -246,7 +267,7 @@ function createChart(widthval, heightval, id, color, callback){
 		    .style('stroke-width', 2);
 */
 	    //console.log(window.document.getElementById("chart").innerHTML);
-	    callback(id,window.document.getElementById("chart").innerHTML);
+	    
        //callback(id, window.d3.select("body").html()); // instead of a return, pass the results to the callback
     }
   });
