@@ -146,7 +146,7 @@ function getCoverPage()
 function getCharts(callback)
 {
 	var ChartsAreLoaded = [];
-	var charts = [{id: 1, color: "red", width: 500, height: 500}, {id: 2, color: "green", width: 400, height: 400},{id: 3, color: "blue", width: 300, height: 300}];
+	var charts = [{id: 1, color: ["red", "orange", "purple"], width: 500, height: 500}, {id: 2, color: ["green", "yellow", "black"], width: 400, height: 400},{id: 3, color: ["blue", "red", "teal"], width: 300, height: 300}];
 
 	for(var i=0; i <charts.length; i++)
 	{
@@ -165,7 +165,7 @@ function createChart(widthval, heightval, id, color, callback){
 
 
   jsdom.env({
-    html: "<html><body><div id='fullchart' style='width: 500px; height: 500px' ><div id='chart'></div><div class='legend'></div></body></html>",
+    html: "<html><body><div id='chart'></div></body></html>",
     scripts: [
       'http://d3js.org/d3.v3.min.js',
       'http://localhost:1337/node_modules/c3/c3.js',
@@ -185,7 +185,7 @@ function createChart(widthval, heightval, id, color, callback){
 
 	    var chart = c3.generate({padding: {
 			  left: 40,
-			  bottom: 40
+			  bottom: 60,
 			},
 	        size: {
 	        width: widthval,
@@ -194,23 +194,23 @@ function createChart(widthval, heightval, id, color, callback){
         data: {
         	xs:{
                 //Declare the axes
-                'Winter 08,09': 'x1',
-                'Winter 09,10': 'x2',
-                'Winter 10,11': 'x3'
+                'LT01_D': 'x1',
+                'LT02': 'x2',
+                'LT_01S': 'x3'
             },
             columns: [
                 ['x1'].concat(periodOne),
                 ['x2'].concat(periodTwo),
                 ['x3'].concat(periodThr),
-                ['Winter 08,09'].concat(xOne),
-                ['Winter 09,10'].concat(xTwo),
-                ['Winter 10,11'].concat(xThr)
+                ['LT01_D'].concat(xOne),
+                ['LT02'].concat(xTwo),
+                ['LT_01S'].concat(xThr)
             ],
             type: 'line',
 	        colors: {
-	            'Winter 08,09': color,
-	            'Winter 09,10': color,
-	            'Winter 10,11': color
+	            'LT01_D': color[0],
+	            'LT02': color[1],
+	            'LT_01S': color[2]
 	        },
         },
         legend: {
@@ -232,8 +232,8 @@ function createChart(widthval, heightval, id, color, callback){
       var svg = d3.select("svg");
 
 
-	d3.select('.legend').insert('div', '.chart').attr('class', 'legend').selectAll('span')
-    .data(['Winter 08,09', 'Winter 09,10', 'Winter 10,11']).enter().append('span')
+	svg.append("foreignObject").attr("width", widthval).attr("height", 20).attr("y", heightval - 20).append("xhtml:div").attr('class', 'legend').selectAll('span')
+    .data(['LT01_D', 'LT02', 'LT_01S']).enter().append('span')
     .attr('data-id', function (id) { return id; })
     .html(function (id) {  
     	var html = '<span style="padding-left: 10px; font-size: 8pt"><svg width="10" height="10"><rect width="10" height="10" fill="'+chart.color(id)+'"></rect></svg><span style="padding-left: 5px">' + id + '</span></span>'; 	
@@ -244,7 +244,7 @@ function createChart(widthval, heightval, id, color, callback){
     });
 
       svg.selectAll("defs").remove();
-      setTimeout(function () { callback(id, "<div class='c3' style='width: 100%; position: relative'>"+ window.document.getElementById("fullchart").innerHTML + "</div>"); }, 500);
+      setTimeout(function () { callback(id, "<div class='c3' style='width: 100%; position: relative'>"+ window.document.getElementById("chart").innerHTML + "</div>"); }, 500);
     }
   });
 }
