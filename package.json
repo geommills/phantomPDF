@@ -22,7 +22,8 @@
     "nodemailer": "*",
     "jsreport": "*",
     "jsdom": "~3.0.1",
-    "d3": "*"
+    "d3": "*",
+    "c3": "*"
   },
   "devDependencies": {
   },
